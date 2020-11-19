@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pengniao.cdzcharginginterface.mapper.ScheduleJobMapper">
+
+    <resultMap type="ScheduleJob" id="scheduleJobResult">
+        <id property="jobId" column="job_id"/>
+        <id property="beanName" column="bean_name"/>
+        <id property="params" column="params"/>
+        <id property="cronExpression" column="cron_expression"/>
+        <id property="status" column="status"/>
+        <id property="remark" column="remark"/>
+        <id property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="queryScheduleJobList" resultMap="scheduleJobResult">
+        select job_id, bean_name, params, cron_expression, status, remark, create_time
+        from schedule_job
+        order by create_time desc
+    </select>
+
+    <insert id="saveJob" parameterType="ScheduleJob">
+        insert into schedule_job(job_id, bean_name, params, cron_expression, status, remark, create_time)
+        values (#{jobId}, #{beanName}, #{params}, #{cronExpression}, #{status}, #{remark}, #{createTime})
+    </insert>
+
+    <select id="queryScheduleJobById" resultMap="scheduleJobResult">
+        select job_id, bean_name, params, cron_expression, status, remark, create_time
+        from schedule_job
+        where job_id = #{jobId}
+    </select>
+
+    <update id="updateJob" parameterType="ScheduleJob">
+        update schedule_job set bean_name=#{beanName}, params=#{params}, cron_expression=#{cronExpression},  remark=#{remark}
+        where job_id=#{jobId}
+    </update>
+
+    <delete id="batchDeleteJob" parameterType="java.lang.Long">
+        delete from schedule_job
+        where job_id in
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="updateBathchStatus">
+        update schedule_job set status =#{status}
+        where job_id in
+        <foreach collection="jobIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+
+</mapper>

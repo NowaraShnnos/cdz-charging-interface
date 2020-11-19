@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>定时任务</title>
+
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script th:src="@{/js/vue.js}"></script>
+    <script th:src="@{/js/element-ui/lib/index.js}"></script>
+    <script th:src="@{/js/MiniDialog-es5.min.js}"></script>
+    <script th:src="@{/js/axios.min.js}"></script>
+
+
+</head>
+<body>
+
+
+<div id="app">
+    <el-form>
+        <el-form-item>
+            <el-button  type="primary" @click="addOrUpdateHandle()">新增</el-button>
+            <el-button  type="danger"  @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+            <el-button  type="danger"  @click="pauseHandle()" :disabled="dataListSelections.length <= 0">批量暂停</el-button>
+            <el-button  type="danger"  @click="resumeHandle()" :disabled="dataListSelections.length <= 0">批量恢复</el-button>
+            <el-button  type="danger"  @click="runHandle()" :disabled="dataListSelections.length <= 0">批量立即执行</el-button>
+            <el-button  type="success"  @click="logHandle()" >日志列表</el-button>
+        </el-form-item>
+    </el-form>
+
+    <el-table
+            :data="dataList"
+            border
+            v-loading="dataListLoading"
+            @selection-change="selectionChangeHandle"
+            style="width: 100%;">
+        <el-table-column
+                type="selection"
+                header-align="center"
+                align="center"
+                width="50">
+        </el-table-column>
+        <el-table-column
+                v-if="false"
+                prop="jobId"
+                header-align="center"
+                align="center"
+                width="80"
+                label="ID">
+        </el-table-column>
+        <el-table-column
+                prop="beanName"
+                header-align="center"
+                align="left"
+                width="200"
+                label="bean名称">
+        </el-table-column>
+        <el-table-column
+                prop="params"
+                header-align="center"
+                align="center"
+                width="160"
+                label="参数">
+        </el-table-column>
+        <el-table-column
+                prop="cronExpression"
+                header-align="center"
+                align="center"
+                width="160"
+                label="cron表达式">
+        </el-table-column>
+        <el-table-column
+                prop="remark"
+                header-align="center"
+                align="left"
+                label="备注">
+        </el-table-column>
+        <el-table-column
+                prop="status"
+                header-align="center"
+                align="center"
+                width="100"
+                label="状态">
+            <template slot-scope="scope">
+                <el-tag v-if="scope.row.status === 0" size="small">正常</el-tag>
+                <el-tag v-else size="small" type="danger">暂停</el-tag>
+            </template>
+        </el-table-column>
+        <el-table-column
+                fixed="right"
+                header-align="center"
+                align="center"
+                width="250"
+                label="操作">
+            <template slot-scope="scope">
+                <el-button  type="text" size="small" @click="addOrUpdateHandle(scope.row.jobId)">修改</el-button>
+                <el-button  type="text" size="small" @click="deleteHandle(scope.row.jobId, scope.row.beanName)">删除</el-button>
+                <el-button  type="text" size="small" @click="pauseHandle(scope.row.jobId, scope.row.beanName)">暂停</el-button>
+                <el-button  type="text" size="small" @click="resumeHandle(scope.row.jobId, scope.row.beanName)">恢复</el-button>
+                <el-button  type="text" size="small" @click="runHandle(scope.row.jobId, scope.row.beanName)">立即执行</el-button>
+            </template>
+        </el-table-column>
+    </el-table>
+
+</div>
+
+</body>
+
+<script th:inline="javascript">
+
+    var vm = new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                dialogTitle: '',
+                dataListLoading: false,
+                dataList: [],
+                dataListSelections: [],
+            }
+        },
+        mounted: function () {
+            this.getDataList();
+        },
+        methods:  {
+            // 获取数据
+            getDataList () {
+                this.dataListLoading = true;
+                var _this = this;
+                axios({
+                    method: 'get',
+                    url: 'schedulejob/schedule/scheduleJobList'
+                }).then(function (response) {
+                    _this.dataList = response.data;
+                    _this.dataListLoading = false
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+
+            // 多选
+            selectionChangeHandle (val){
+                this.dataListSelections = val;
+            },
+
+            // 新增 / 修改
+            addOrUpdateHandle (id) {
+                Dialog({
+                    title: !id ? '新增' : '修改',
+                    width: 800,
+                    draggable: true,
+                    iframeContent: {
+                        src: "schedule-add-or-update?jobId="+(id?id:0),
+                        height: 500
+                    },
+                    showButton: false
+                });
+            },
+            // 删除
+            deleteHandle (id, beanName) {
+                var ids = id ? [id] : this.dataListSelections.map(item => {
+                    return item.jobId
+                })
+                var beanNames = id ? [beanName] : this.dataListSelections.map(item => {
+                    return item.beanName
+                })
+                this.$confirm(`确定对 【 ${beanNames.join(',')} 】进行 【 ${beanName ? '删除' : '批量删除'} 】 操作?`, '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    var _this = this;
+                    axios({
+                        method: 'post',
+                        url: 'schedulejob/schedule/delete',
+                        data: ids
+                    }).then(function (response) {
+                        if(response.data.code != 0){
+                            _this.openMessage("error", response.data.message);
+                        }else{
+                            _this.openMessage("success", response.data.message);
+                            _this.getDataList();
+                        }
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }).catch(() => {})
+            },
+            // 暂停
+            pauseHandle (id, beanName) {
+                var ids = id ? [id] : this.dataListSelections.map(item => {
+                    return item.jobId
+                })
+                var beanNames = id ? [beanName] : this.dataListSelections.map(item => {
+                    return item.beanName
+                })
+                this.$confirm(`确定对[id=${beanNames.join(',')}]进行[${beanName ? '暂停' : '批量暂停'}]操作?`, '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    var _this = this;
+                    axios({
+                        method: 'post',
+                        url: 'schedulejob/schedule/pause',
+                        data: ids
+                    }).then(function (response) {
+                        if(response.data.code != 0){
+                            _this.openMessage("error", response.data.message);
+                        }else{
+                            _this.openMessage("success", response.data.message);
+                            _this.getDataList();
+                        }
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }).catch(() => {})
+            },
+            // 恢复
+            resumeHandle (id, beanName) {
+                var ids = id ? [id] : this.dataListSelections.map(item => {
+                    return item.jobId
+                })
+                var beanNames = id ? [beanName] : this.dataListSelections.map(item => {
+                    return item.beanName
+                })
+                this.$confirm(`确定对[id=${beanNames.join(',')}]进行[${beanName ? '恢复' : '批量恢复'}]操作?`, '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    var _this = this;
+                    axios({
+                        method: 'post',
+                        url: 'schedulejob/schedule/resume',
+                        data: ids
+                    }).then(function (response) {
+                        if(response.data.code != 0){
+                            _this.openMessage("error", response.data.message);
+                        }else{
+                            _this.openMessage("success", response.data.message);
+                            _this.getDataList();
+                        }
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }).catch(() => {})
+            },
+            // 立即执行
+            runHandle (id, beanName) {
+                var ids = id ? [id] : this.dataListSelections.map(item => {
+                    return item.jobId
+                })
+                var beanNames = id ? [beanName] : this.dataListSelections.map(item => {
+                    return item.beanName
+                })
+                this.$confirm(`确定对[id=${beanNames.join(',')}]进行[${beanName ? '立即执行' : '批量立即执行'}]操作?`, '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    var _this = this;
+                    axios({
+                        method: 'post',
+                        url: 'schedulejob/schedule/run',
+                        data: ids
+                    }).then(function (response) {
+                        if(response.data.code != 0){
+                            _this.openMessage("error", response.data.message);
+                        }else{
+                            _this.openMessage("success", response.data.message);
+                            _this.getDataList();
+                        }
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }).catch(() => {})
+            },
+
+            // 日志
+            logHandle(){
+                Dialog({
+                    title: '日志记录',
+                    width: 860,
+                    draggable: true,
+                    iframeContent: {
+                        src: "schedule-log",
+                        height: 600
+                    },
+                    showButton: false
+                });
+            },
+
+            // 提示消息
+            openMessage(type, message){
+                this.$message({
+                    message: message,
+                    type: type
+                });
+            },
+
+            // 关闭提示框
+           closeDialog(){
+               Dialog.close();
+           }
+
+        }
+    });
+</script>
+
+</html>

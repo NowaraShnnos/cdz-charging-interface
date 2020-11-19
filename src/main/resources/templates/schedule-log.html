@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>日志记录</title>
+
+    <!-- 引入样式 -->
+    <link rel="stylesheet" th:href="@{/js/element-ui/lib/theme-chalk/index.css}">
+    <!-- 引入组件库 -->
+    <script th:src="@{/js/vue.js}"></script>
+    <script th:src="@{/js/element-ui/lib/index.js}"></script>
+    <script th:src="@{/js/axios.min.js}"></script>
+
+
+</head>
+<body>
+<div id="app" >
+
+    <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
+        <el-form-item>
+            <el-input v-model="dataForm.beanName" placeholder="任务ID" clearable></el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-button @click="getDataList()">查询</el-button>
+        </el-form-item>
+    </el-form>
+    <el-table
+            :data="dataList"
+            border
+            v-loading="dataListLoading"
+            height="460"
+            style="width: 100%;">
+        <el-table-column
+                prop="logId"
+                header-align="center"
+                align="center"
+                width="80"
+                label="日志ID">
+        </el-table-column>
+        <el-table-column
+                v-if="false"
+                prop="jobId"
+                header-align="center"
+                align="center"
+                width="80"
+                label="任务ID">
+        </el-table-column>
+        <el-table-column
+                prop="beanName"
+                header-align="center"
+                align="center"
+                width="200"
+                label="bean名称">
+        </el-table-column>
+        <el-table-column
+                prop="params"
+                header-align="center"
+                align="center"
+                width="90"
+                label="参数">
+        </el-table-column>
+        <el-table-column
+                prop="status"
+                header-align="center"
+                align="center"
+                width="90"
+                label="状态">
+            <template slot-scope="scope">
+                <el-tag v-if="scope.row.status === 0" size="small">成功</el-tag>
+                <el-tag v-else @click.native="showErrorInfo(scope.row.logId)" size="small" type="danger" style="cursor: pointer;">失败</el-tag>
+                <!--<el-popover v-else-->
+                        <!--placement="bottom"-->
+                        <!--title="error"-->
+                        <!--width="200"-->
+                        <!--trigger="click">-->
+                    <!--<div>{{scope.row.error}}</div>-->
+                <!--</el-popover>-->
+            </template>
+        </el-table-column>
+        <el-table-column
+                prop="times"
+                header-align="center"
+                align="center"
+                label="耗时(单位: 毫秒)">
+        </el-table-column>
+        <el-table-column
+                prop="createTime"
+                header-align="center"
+                align="center"
+                width="180"
+                label="执行时间">
+        </el-table-column>
+    </el-table>
+    <el-pagination
+            @size-change="sizeChangeHandle"
+            @current-change="currentChangeHandle"
+            :current-page="pageIndex"
+            :page-sizes="[10, 20, 50, 100]"
+            :page-size="pageSize"
+            :total="totalPage"
+            layout="total, sizes, prev, pager, next, jumper">
+    </el-pagination>
+
+</div>
+</body>
+
+<script th:inline="javascript">
+
+    var vm = new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                visible: false,
+                popoverTitle: '',
+                popoverContent:'',
+                dataForm: {
+                    beanName: ''
+                },
+                dataList: [],
+                pageIndex: 1,
+                pageSize: 10,
+                totalPage: 0,
+                dataListLoading: false
+            }
+        },
+        mounted: function () {
+            this.getDataList();
+        },
+        methods: {
+            getDataList () {
+                this.dataListLoading = true;
+                var _this = this;
+                axios({
+                    method: 'get',
+                    url: 'schedulejob/schedulejob_log/paginationList',
+                    params: {
+                        'page': this.pageIndex,
+                        'rows': this.pageSize,
+                        'id': 1,
+                        'beanName': this.dataForm.beanName
+                    }
+                }).then(function (response) {
+                    console.info(response.data.list);
+                    _this.dataList = response.data.list
+                    _this.totalPage = response.data.totalCount
+                    _this.dataListLoading = false
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+            // 每页数
+            sizeChangeHandle (val) {
+                this.pageSize = val
+                this.pageIndex = 1
+                this.getDataList()
+            },
+            // 当前页
+            currentChangeHandle (val) {
+                this.pageIndex = val
+                this.getDataList()
+            },
+            // 失败信息
+            showErrorInfo (id) {
+                var _this = this;
+                axios({
+                    method: 'get',
+                    url: 'schedulejob/schedulejob_log/info/'+id
+                }).then(function (response) {
+
+                    _this.$alert(response.data.log.error, response.data.log.beanName, {
+                        showConfirmButton: false,
+                        modal: false
+
+                    });
+                }).catch(function (error) {
+                    console.log(error);
+                });
+
+            }
+        }
+    })
+
+</script>
+
+</html>
