@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  **/
 
 @Component("StartUpChargringResultTask")
-public class StartUpChargringResult implements ITask{
+public class StartUpChargringResultTask implements ITask{
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 

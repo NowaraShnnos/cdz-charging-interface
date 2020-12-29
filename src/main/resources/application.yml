@@ -7,12 +7,18 @@ spring:
   datasource:
     #   数据源基本配置
     username: root
-    #   办公室服务器数据库密码：Admin@123   生产环境密码：admin
-    password: Admin@123
-    #   办公室服务器 ：com.mysql.cj.jdbc.Driver   生产环境：com.mysql.jdbc.Driver
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    #   办公室服务器数据库地址：192.168.0.124:3306    生产环境：192.168.0.100:3306
-    url: jdbc:mysql://192.168.0.124:3306/carnet-charging?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false&serverTimezone=Asia/Shanghai
+
+    # 办公室环境
+#    password: Admin@123
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://192.168.0.124:3306/carnet?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false&serverTimezone=Asia/Shanghai
+
+    # 生产环境：192.168.0.100:3306
+    password: admin
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://192.168.0.100:3306/carnet?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false&serverTimezone=Asia/Shanghai
+
+
     type: com.alibaba.druid.pool.DruidDataSource
     #   数据源其他配置
     initialSize: 5
@@ -34,7 +40,7 @@ spring:
 
   redis:
     database: 0 # Redis数据库索引（默认为0）
-    host: 192.168.0.199
+    host: 127.0.0.1    # 192.168.0.199 办公室   #39.104.60.18 鹏鸟云   # 景郑8000服务器 127.0.0.1
     port: 6379
 #    password: 198401
     jedis:
@@ -45,6 +51,7 @@ spring:
         min-idle: 0
     lettuce:
       shutdown-timeout: 0
+    timeout: 100000
 
   thymeleaf:
     cache: false
@@ -52,3 +59,8 @@ spring:
 mybatis:
   mapper-locations: classpath:com/pengniao/cdzcharginginterface/mapper/xml/*.xml
   typeAliasesPackage: com.pengniao.cdzcharginginterface.entity
+
+custom-parameters:
+#  kuaidian-request: http://192.168.0.113:8099/kuaidian-interface/evcs/v1.1/   # 办公室
+
+  kuaidian-request: http://211.142.201.26:8099/kuaidian-interface/evcs/v1.1/   # 正式环境

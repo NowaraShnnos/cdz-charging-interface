@@ -71,7 +71,7 @@ public class ScheduleJobServiceImpl implements ScheduleJobService {
         scheduleJob.setJobId(IdWorker.nextId()); //  任务ID
         scheduleJob.setStatus(Constant.ScheduleStatus.NORMAL.getValue()); // 任务状态 正常
         scheduleJob.setCreateTime(new Date()); // 创建时间
-
+        scheduleJob.setJobType(3); // 任务类型
         // 保存定时作业
         scheduleJobMapper.saveJob(scheduleJob);
 

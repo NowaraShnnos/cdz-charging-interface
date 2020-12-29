@@ -13,17 +13,20 @@
         <id property="status" column="status"/>
         <id property="remark" column="remark"/>
         <id property="createTime" column="create_time"/>
+        <id property="jobType" column="job_type"/>
+
     </resultMap>
 
     <select id="queryScheduleJobList" resultMap="scheduleJobResult">
-        select job_id, bean_name, params, cron_expression, status, remark, create_time
+        select job_id, bean_name, params, cron_expression, status, remark, create_time, job_type
         from schedule_job
+        where job_type = 3
         order by create_time desc
     </select>
 
     <insert id="saveJob" parameterType="ScheduleJob">
-        insert into schedule_job(job_id, bean_name, params, cron_expression, status, remark, create_time)
-        values (#{jobId}, #{beanName}, #{params}, #{cronExpression}, #{status}, #{remark}, #{createTime})
+        insert into schedule_job(job_id, bean_name, params, cron_expression, status, remark, create_time, job_type)
+        values (#{jobId}, #{beanName}, #{params}, #{cronExpression}, #{status}, #{remark}, #{createTime}, #{jobType})
     </insert>
 
     <select id="queryScheduleJobById" resultMap="scheduleJobResult">

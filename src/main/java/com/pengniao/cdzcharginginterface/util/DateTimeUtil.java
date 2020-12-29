@@ -23,6 +23,8 @@ public  class DateTimeUtil {
     /** 时间格式(yyyy-MM-dd HH:mm:ss) */
     public final static String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
+    public final static String DATE_TIME_PATTERN_STRING = "yyyyMMddHHmmss";
+
     /* 功能描述: 获取当前系统时间30分钟以后的时间
      * @param
     * @return: java.lang.String
@@ -58,6 +60,11 @@ public  class DateTimeUtil {
     public  static String getSystemTime(){
         SimpleDateFormat df = new SimpleDateFormat(DATE_TIME_PATTERN);//设置日期格式
        return df.format(new Date());
+    }
+
+    public  static String getSystemTimeString(){
+        SimpleDateFormat df = new SimpleDateFormat(DATE_TIME_PATTERN_STRING);//设置日期格式
+        return df.format(new Date());
     }
 
     /**

@@ -26,7 +26,7 @@ public class ScheduleConfig {
 
         //quartz参数
         Properties prop = new Properties();
-        prop.put("org.quartz.scheduler.instanceName", "CdzScheduler");
+        prop.put("org.quartz.scheduler.instanceName", "CdzChargingScheduler");
         //配置的名字，如果设置为AUTO,quartz会根据物理机名和当前时间产生一个名字
         prop.put("org.quartz.scheduler.instanceId", "AUTO");
 
@@ -66,7 +66,7 @@ public class ScheduleConfig {
 
         factory.setQuartzProperties(prop);
 
-        factory.setSchedulerName("CdzScheduler");
+        factory.setSchedulerName("CdzChargingScheduler");
         //延时启动
         factory.setStartupDelay(30);
         factory.setApplicationContextSchedulerContextKey("applicationContextKey");

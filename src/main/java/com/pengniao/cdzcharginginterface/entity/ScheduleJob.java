@@ -21,7 +21,7 @@ public class ScheduleJob implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public static final  String JOB_PARAM_KEY="JOB_PARAM_KEY"; // 任务调度key
+    public static final  String JOB_PARAM_KEY="JOB_CHARGING_KEY"; // 任务调度key
 
     @JsonSerialize(using = ToStringSerializer.class)
     private Long jobId; // 任务ID
@@ -35,6 +35,8 @@ public class ScheduleJob implements Serializable {
     private Integer status; // 任务状态
 
     private String remark; // 备注
+
+    private Integer jobType; // 任务类型 1：会员  2：停车 3：充电
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
@@ -93,5 +95,13 @@ public class ScheduleJob implements Serializable {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public Integer getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(Integer jobType) {
+        this.jobType = jobType;
     }
 }
