@@ -2,6 +2,10 @@ server:
   port: 7006
   servlet:
     context-path: /cdz-charging-interface
+  ssl:
+    key-store: classpath:3648903_www.hnjzdl.com.pfx #正式环境：3648903_www.hnjzdl.com.pfx
+    key-store-password: C390RPiz #正式环境：C390RPiz
+    key-store-type: PKCS12  #正式环境：PKCS12
 
 spring:
   datasource:
